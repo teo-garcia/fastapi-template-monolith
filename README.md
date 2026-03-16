@@ -1,23 +1,38 @@
-# FastAPI Monolith Template
+<div align="center">
 
-Production-grade FastAPI monolith with PostgreSQL, Redis, structured logging, Prometheus metrics, and full CI/CD.
+# FastAPI Template Monolith
+
+**Production-grade FastAPI monolith with PostgreSQL, Redis, structured
+logging, Prometheus metrics, and full CI/CD**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9)](https://docs.astral.sh/uv/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17+-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-7+-DC382D?logo=redis&logoColor=white)](https://redis.io)
+
+Part of the [@teo-garcia/templates](https://github.com/teo-garcia/templates)
+ecosystem
+
+</div>
+
+---
 
 ## Features
 
-- **FastAPI** with async SQLAlchemy 2.0, Pydantic v2, and automatic OpenAPI docs.
-- **PostgreSQL** via asyncpg with Alembic migrations.
-- **Redis** for caching (async client with hiredis).
-- **Structured logging** via structlog (JSON in production, console in dev).
-- **Prometheus metrics** at `/metrics`.
-- **Health checks** at `/health`, `/health/live`, `/health/ready`.
-- **Security headers** (CSP, HSTS, X-Content-Type-Options, X-Frame-Options).
-- **Rate limiting** via slowapi.
-- **Global exception handling** with consistent error shape.
-- **Request ID propagation** (X-Request-ID header, bound to all logs).
-- **Docker** multi-stage build, non-root user, tini for signal handling.
-- **CI** with lint, type check, format check, test, coverage.
-- **Security scanning** with Trivy and pip-audit.
-- **Pre-commit hooks** with ruff, mypy, and commitizen.
+| Category          | Technologies / Direction                               |
+| ----------------- | ------------------------------------------------------ |
+| **Framework**     | FastAPI with async SQLAlchemy 2.0 and Pydantic v2      |
+| **Database**      | PostgreSQL via asyncpg and Alembic migrations          |
+| **Cache**         | Redis with async client support                        |
+| **Observability** | Health checks, Prometheus metrics, structured logging  |
+| **Security**      | Security headers, rate limiting, request ID propagation |
+| **Testing**       | Pytest, pytest-asyncio, coverage, HTTPX ASGI transport |
+| **Code Quality**  | Ruff, mypy, pre-commit, commitizen                     |
+| **DevOps**        | Docker, CI, Trivy, pip-audit                           |
+
+---
 
 ## Requirements
 
@@ -27,33 +42,43 @@ Production-grade FastAPI monolith with PostgreSQL, Redis, structured logging, Pr
 - PostgreSQL 17+
 - Redis
 
+---
+
 ## Quick Start
 
 ```bash
-# Clone
+# 1. Clone the template
 npx degit teo-garcia/fastapi-template-monolith my-api
 cd my-api
 
-# Environment
+# 2. Setup environment
 cp .env.example .env
 cp .env.test.example .env.test
 
-# Start infrastructure
+# 3. Start infrastructure
 docker compose up -d db redis
 
-# Install dependencies
+# 4. Install dependencies
 uv sync
 
-# Run migrations
+# 5. Run migrations
 make db-deploy
 
-# Start dev server
+# 6. Start development server
 make dev
 ```
 
-The API is available at `http://localhost:8000`. Swagger docs at `http://localhost:8000/docs`.
+Open [http://localhost:8000/docs](http://localhost:8000/docs) for Swagger UI
 
-## Scripts
+Open [http://localhost:8000/health](http://localhost:8000/health) for health
+status
+
+Open [http://localhost:8000/metrics](http://localhost:8000/metrics) for
+Prometheus metrics
+
+---
+
+## Available Scripts
 
 | Command                             | Description                                        |
 | ----------------------------------- | -------------------------------------------------- |
@@ -75,39 +100,67 @@ The API is available at `http://localhost:8000`. Swagger docs at `http://localho
 | `make db-seed`                      | Seed development data                              |
 | `make docker-dev`                   | Full stack via Docker Compose                      |
 
+---
+
 ## Testing
 
-Tests use pytest with pytest-asyncio. The test client uses httpx with ASGI transport (no real HTTP, no server needed).
+Tests use pytest with pytest-asyncio. The test client uses HTTPX with ASGI
+transport, so most tests run without a real HTTP server.
 
 ```bash
-# All tests
+# Run all tests
 make test
 
-# With coverage
+# Run with coverage
 make test-cov
 
-# Only e2e tests (require database)
+# Run e2e tests only
 make test-e2e
 ```
 
-Test database is configured via `.env.test`. The test suite creates and drops tables automatically.
+**Test Coverage:**
 
-## Health and Metrics
+- **Unit tests**: Business logic and service behavior
+- **API tests**: Endpoint coverage via HTTPX ASGI transport
+- **E2E tests**: Database-backed flows where needed
 
-| Endpoint            | Purpose                             |
-| ------------------- | ----------------------------------- |
-| `GET /health/live`  | Liveness probe (always 200)         |
-| `GET /health/ready` | Readiness probe (checks DB + Redis) |
-| `GET /health`       | Full health (soft failure on Redis) |
-| `GET /metrics`      | Prometheus-compatible metrics       |
+---
 
-## Architecture
+## Health & Observability
 
-```
+### Health Checks
+
+- `GET /health/live` - Liveness probe (always 200)
+- `GET /health/ready` - Readiness probe (checks DB + Redis)
+- `GET /health` - Full health summary
+
+### Metrics
+
+- `GET /metrics` - Prometheus-compatible metrics endpoint
+
+### Logging
+
+- Structured logs via structlog
+- Request ID propagation through middleware
+- Consistent error handling and response shape
+
+---
+
+## Architecture Notes
+
+### Service Model
+
+- Single-service REST API with broad module ownership
+- Direct in-process module calls
+- Redis is used for cache and readiness checks, not service messaging
+
+### Project Structure
+
+```text
 app/
   main.py                 # App factory, lifespan, middleware stack
   config/
-    settings.py           # Pydantic BaseSettings (all env vars validated here)
+    settings.py           # Pydantic Settings and env validation
   shared/
     database/             # SQLAlchemy async engine + session
     redis/                # Async Redis client
@@ -124,9 +177,14 @@ app/
       router.py           # API endpoints
 ```
 
-Each feature module follows the same pattern: `models.py` (database), `schemas.py` (validation), `service.py` (logic), `router.py` (HTTP).
+Each feature module follows the same pattern:
+`models.py`, `schemas.py`, `service.py`, `router.py`.
+
+---
 
 ## Deployment
+
+### Docker
 
 ```bash
 # Build production image
@@ -136,11 +194,22 @@ docker build -f docker/Dockerfile -t my-api .
 docker run -p 8000:8000 --env-file .env my-api
 ```
 
-The production image uses gunicorn with uvicorn workers, runs as non-root, and includes tini for proper signal forwarding.
+The production image uses gunicorn with uvicorn workers, runs as non-root, and
+includes tini for proper signal forwarding.
 
 ## Environment Variables
 
-See `.env.example` for all available configuration. All variables are validated at startup via Pydantic BaseSettings. Missing required values cause immediate failure with a clear error message.
+See `.env.example` for the full list. All variables are validated at startup
+via Pydantic Settings, and missing required values fail fast.
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `REDIS_URL` | Redis connection string | Required |
+| `LOG_LEVEL` | Logging verbosity | `info` |
+| `ENVIRONMENT` | Runtime environment | `development` |
+
+---
 
 ## Tooling Comparison (NestJS Parity)
 
@@ -150,23 +219,31 @@ See `.env.example` for all available configuration. All variables are validated 
 | ESLint + Prettier  | ruff                      | Lint + format      |
 | tsc --noEmit       | mypy --strict             | Type checking      |
 | Jest               | pytest                    | Testing            |
-| Supertest          | httpx (ASGI)              | E2E HTTP client    |
+| Supertest          | HTTPX (ASGI)              | E2E HTTP client    |
 | Prisma             | SQLAlchemy + Alembic      | ORM + migrations   |
 | class-validator    | Pydantic v2               | Validation         |
-| @nestjs/config     | Pydantic BaseSettings     | Configuration      |
+| @nestjs/config     | Pydantic Settings         | Configuration      |
 | @nestjs/swagger    | Built-in (automatic)      | API docs           |
-| helmet             | SecurityHeadersMiddleware | Security headers   |
+| helmet             | Security headers middleware | Security headers |
 | @nestjs/throttler  | slowapi                   | Rate limiting      |
 | Winston            | structlog                 | Structured logging |
 | prom-client        | prometheus-client         | Metrics            |
 | Husky + commitlint | pre-commit + commitizen   | Git hooks          |
 
+---
+
 ## Related Templates
 
-- [nest-template-monolith](https://github.com/teo-garcia/nest-template-monolith) - NestJS equivalent
-- [nest-template-microservice](https://github.com/teo-garcia/nest-template-microservice) - NestJS microservice
-- [react-template-next](https://github.com/teo-garcia/react-template-next) - Next.js frontend
-- [react-template-rr](https://github.com/teo-garcia/react-template-rr) - React Router frontend
+- [nest-template-monolith](https://github.com/teo-garcia/nest-template-monolith) -
+  NestJS equivalent
+- [nest-template-microservice](https://github.com/teo-garcia/nest-template-microservice) -
+  NestJS microservice
+- [react-template-next](https://github.com/teo-garcia/react-template-next) -
+  Next.js frontend
+- [react-template-rr](https://github.com/teo-garcia/react-template-rr) - React
+  Router frontend
+
+---
 
 ## License
 
