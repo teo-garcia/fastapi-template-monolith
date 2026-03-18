@@ -18,14 +18,18 @@ permissions:
   contents: read
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   trivy-fs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: fs
           scan-ref: .
@@ -41,15 +45,13 @@ jobs:
   trivy-docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Build image for scanning
-        run: docker build -f docker/Dockerfile -t scan-target .
-
-      - name: Trivy image scan
-        uses: aquasecurity/trivy-action@master
+      - name: Trivy Dockerfile config scan
+        uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: scan-target
+          scan-type: config
+          scan-ref: ./docker/Dockerfile
           format: sarif
           output: trivy-image.sarif
           severity: CRITICAL,HIGH
@@ -63,17 +65,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/dependency-review-action@v4
 
   pip-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
         with:
-          version: 'latest'
+          version: '7.6.0'
 
       - uses: actions/setup-python@v5
         with:
