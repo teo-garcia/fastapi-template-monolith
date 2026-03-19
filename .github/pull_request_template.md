@@ -1,19 +1,20 @@
-## What
+## Summary
 
-Brief description of the change.
+<!-- Describe the change and its intent -->
 
-## Why
+## Testing
 
-Context and motivation.
+<!-- List the checks you ran locally -->
 
-## How
-
-Implementation approach.
+- [ ] Relevant checks pass locally
+- [ ] Docs/config updated if needed
 
 ## Checklist
 
-- [ ] Lint passes (`make lint-check`)
-- [ ] Types pass (`make lint-types`)
-- [ ] Format passes (`make format-check`)
-- [ ] Tests pass (`make test`)
-- [ ] Migration added if schema changed
+- [ ] Scope is focused and intentional
+- [ ] Breaking changes are documented
+- [ ] Screenshots or logs attached when useful
+
+## Related Issues
+
+Closes #
