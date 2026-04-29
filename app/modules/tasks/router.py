@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.tasks.models import TaskStatus
 from app.modules.tasks.schemas import CreateTaskSchema, TaskResponse, UpdateTaskSchema
 from app.modules.tasks.service import TasksService
 from app.shared.database.engine import get_db
@@ -13,8 +14,12 @@ def _get_service(db: AsyncSession = Depends(get_db)) -> TasksService:
 
 
 @router.get("/", response_model=list[TaskResponse])
-async def list_tasks(service: TasksService = Depends(_get_service)) -> list[TaskResponse]:
-    tasks = await service.find_all()
+async def list_tasks(
+    status: TaskStatus | None = None,
+    priority: int | None = Query(default=None, ge=0, le=10),
+    service: TasksService = Depends(_get_service),
+) -> list[TaskResponse]:
+    tasks = await service.find_all(status=status, priority=priority)
     return [TaskResponse.model_validate(t) for t in tasks]
 
 

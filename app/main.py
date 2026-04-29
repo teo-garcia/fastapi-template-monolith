@@ -87,6 +87,14 @@ def create_app() -> FastAPI:
     # Exception handlers
     register_exception_handlers(app)
 
+    @app.get("/")
+    async def service_info() -> dict[str, str]:
+        return {
+            "name": settings.app_name,
+            "status": "ok",
+            "version": settings.app_version,
+        }
+
     # Routers (health and metrics are outside the API prefix)
     app.include_router(health_router)
     if settings.metrics_enabled:

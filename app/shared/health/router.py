@@ -1,7 +1,7 @@
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,16 +20,37 @@ async def liveness() -> dict[str, str]:
 
 @router.get("/health/ready")
 async def readiness(
+    response: Response,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ) -> dict[str, Any]:
-    await db.execute(text("SELECT 1"))
-    await redis.ping()  # type: ignore[misc]
-    return {"status": "ok", "checks": {"database": "ok", "redis": "ok"}}
+    checks: dict[str, str] = {}
+
+    try:
+        await db.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception:
+        await logger.awarning("health_check_failed", service="database")
+        checks["database"] = "error"
+
+    try:
+        await redis.ping()  # type: ignore[misc]
+        checks["redis"] = "ok"
+    except Exception:
+        await logger.awarning("health_check_failed", service="redis")
+        checks["redis"] = "error"
+
+    is_healthy = all(v == "ok" for v in checks.values())
+    response.status_code = 200 if is_healthy else 503
+    return {
+        "status": "ok" if is_healthy else "error",
+        "checks": checks,
+    }
 
 
 @router.get("/health")
 async def health(
+    response: Response,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ) -> dict[str, Any]:
@@ -50,4 +71,5 @@ async def health(
         checks["redis"] = "error"
 
     overall = "ok" if all(v == "ok" for v in checks.values()) else "degraded"
+    response.status_code = 200 if overall == "ok" else 503
     return {"status": overall, "checks": checks}

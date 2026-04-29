@@ -29,6 +29,23 @@ class TestTasksCRUD:
         assert isinstance(data, list)
         assert len(data) >= 1
 
+    async def test_list_tasks_supports_status_and_priority_filters(self, client: AsyncClient) -> None:
+        await client.post(
+            f"{API_PREFIX}/tasks/",
+            json={"title": "Low pending", "priority": 1, "status": "PENDING"},
+        )
+        await client.post(
+            f"{API_PREFIX}/tasks/",
+            json={"title": "High in progress", "priority": 5, "status": "IN_PROGRESS"},
+        )
+
+        response = await client.get(f"{API_PREFIX}/tasks/?status=IN_PROGRESS&priority=5")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["status"] == "IN_PROGRESS"
+        assert data[0]["priority"] >= 5
+
     async def test_get_task(self, client: AsyncClient) -> None:
         create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to get"})
         task_id = create_resp.json()["id"]

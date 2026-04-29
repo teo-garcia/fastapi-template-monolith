@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.tasks.models import Task
+from app.modules.tasks.models import Task, TaskStatus
 from app.modules.tasks.schemas import CreateTaskSchema, UpdateTaskSchema
 
 
@@ -10,8 +10,16 @@ class TasksService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def find_all(self) -> list[Task]:
-        result = await self.db.execute(select(Task).order_by(Task.created_at.desc()))
+    async def find_all(self, status: TaskStatus | None = None, priority: int | None = None) -> list[Task]:
+        query = select(Task)
+
+        if status is not None:
+            query = query.where(Task.status == status)
+
+        if priority is not None:
+            query = query.where(Task.priority >= priority)
+
+        result = await self.db.execute(query.order_by(Task.priority.desc(), Task.created_at.desc()))
         return list(result.scalars().all())
 
     async def find_one(self, task_id: str) -> Task:
