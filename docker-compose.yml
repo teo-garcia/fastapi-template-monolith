@@ -10,7 +10,7 @@ services:
     ports:
       - "${DATABASE_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-postgres}"]
@@ -27,11 +27,24 @@ services:
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    command:
+      - sh
+      - -c
+      - |
+        if [ -n "$$REDIS_PASSWORD" ]; then
+          exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"
+        fi
+        exec redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+        [
+          "CMD-SHELL",
+          'if [ -n "$$REDIS_PASSWORD" ]; then redis-cli --pass "$$REDIS_PASSWORD" ping; else redis-cli ping; fi',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,13 +60,22 @@ services:
     restart: unless-stopped
     environment:
       APP_NAME: FastAPI Monolith Template
+      APP_VERSION: 1
       DEBUG: "true"
+      API_PREFIX: /api
+      SHUTDOWN_TIMEOUT: 10
       DATABASE_URL: postgresql+asyncpg://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@db:5432/${DATABASE_NAME:-fastapi_monolith}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_TTL: 3600
       PORT: 8000
+      LOG_LEVEL: info
       LOG_JSON: "false"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: http://localhost:3000
+      THROTTLE_LIMIT: 100/minute
+      METRICS_ENABLED: "true"
     ports:
       - "${PORT:-8000}:8000"
     volumes:
