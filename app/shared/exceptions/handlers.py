@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -9,29 +10,59 @@ from sqlalchemy.exc import IntegrityError
 logger = structlog.get_logger("exceptions")
 
 
-def _error_body(status: int, error: str, detail: Any = None) -> dict[str, Any]:
-    return {"statusCode": status, "error": error, "detail": detail}
+def _request_path(request: Request) -> str:
+    query = request.url.query
+    return f"{request.url.path}?{query}" if query else request.url.path
 
 
-async def _http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
+def _api_error_body(
+    request: Request,
+    status: int,
+    message: str,
+    error: str,
+    errors: Any = None,
+) -> dict[str, Any]:
+    request_id = getattr(request.state, "request_id", None)
+    body = {
+        "success": False,
+        "statusCode": status,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "path": _request_path(request),
+        "method": request.method,
+        "message": message,
+        "error": error,
+    }
+    if request_id:
+        body["meta"] = {"requestId": request_id}
+    if errors is not None:
+        body["errors"] = errors
+    return body
+
+
+async def _http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
-        content=_error_body(exc.status_code, type(exc).__name__, exc.detail),
+        content=_api_error_body(request, exc.status_code, str(exc.detail), type(exc).__name__),
     )
 
 
-async def _validation_error_handler(_request: Request, exc: RequestValidationError) -> JSONResponse:
+async def _validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=422,
-        content=_error_body(422, "Validation Error", exc.errors()),
+        content=_api_error_body(request, 422, "Validation failed", "ValidationError", exc.errors()),
     )
 
 
-async def _integrity_error_handler(_request: Request, exc: IntegrityError) -> JSONResponse:
+async def _integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:
     await logger.awarning("integrity_error", detail=str(exc.orig))
     return JSONResponse(
         status_code=409,
-        content=_error_body(409, "Conflict", "A record with the given data already exists."),
+        content=_api_error_body(
+            request,
+            409,
+            "A record with the given data already exists.",
+            "ConflictError",
+        ),
     )
 
 
@@ -40,7 +71,12 @@ async def _unhandled_error_handler(request: Request, exc: Exception) -> JSONResp
     await logger.aerror("unhandled_error", exc_info=exc, request_id=request_id)
     return JSONResponse(
         status_code=500,
-        content=_error_body(500, "Internal Server Error", "An unexpected error occurred."),
+        content=_api_error_body(
+            request,
+            500,
+            "An unexpected error occurred.",
+            "InternalServerError",
+        ),
     )
 
 

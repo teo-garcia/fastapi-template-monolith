@@ -4,6 +4,19 @@ from httpx import AsyncClient
 API_PREFIX = "/api"
 
 
+def assert_error_envelope(data: dict[str, object], status_code: int, method: str) -> None:
+    assert data["success"] is False
+    assert data["statusCode"] == status_code
+    assert data["method"] == method
+    assert isinstance(data["timestamp"], str)
+    assert isinstance(data["path"], str)
+    assert isinstance(data["message"], str)
+    assert isinstance(data["error"], str)
+    meta = data["meta"]
+    assert isinstance(meta, dict)
+    assert isinstance(meta["requestId"], str)
+
+
 @pytest.mark.e2e
 class TestTasksCRUD:
     async def test_create_task(self, client: AsyncClient) -> None:
@@ -83,6 +96,7 @@ class TestTasksValidation:
     async def test_create_task_empty_title_rejected(self, client: AsyncClient) -> None:
         response = await client.post(f"{API_PREFIX}/tasks/", json={"title": ""})
         assert response.status_code == 422
+        assert_error_envelope(response.json(), 422, "POST")
 
     async def test_create_task_missing_title_rejected(self, client: AsyncClient) -> None:
         response = await client.post(f"{API_PREFIX}/tasks/", json={"description": "no title"})
@@ -102,6 +116,7 @@ class TestTasksNotFound:
     async def test_get_nonexistent_task(self, client: AsyncClient) -> None:
         response = await client.get(f"{API_PREFIX}/tasks/nonexistent-id")
         assert response.status_code == 404
+        assert_error_envelope(response.json(), 404, "GET")
 
     async def test_update_nonexistent_task(self, client: AsyncClient) -> None:
         response = await client.patch(f"{API_PREFIX}/tasks/nonexistent-id", json={"title": "nope"})
