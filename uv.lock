@@ -274,6 +274,9 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "teo-mypy-config-shared" },
+    { name = "teo-pytest-config-shared" },
+    { name = "teo-ruff-config-shared" },
 ]
 
 [package.metadata]
@@ -300,6 +303,9 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=0.25" },
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.8" },
+    { name = "teo-mypy-config-shared", specifier = "==0.1.0" },
+    { name = "teo-pytest-config-shared", specifier = "==0.1.0" },
+    { name = "teo-ruff-config-shared", specifier = "==0.1.0" },
 ]
 
 [[package]]
@@ -1057,6 +1063,33 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ef/52/9ba0f43b686e7f3ddfeaa78ac3af750292662284b3661e91ad5494f21dbc/structlog-25.5.0.tar.gz", hash = "sha256:098522a3bebed9153d4570c6d0288abf80a031dfdb2048d59a49e9dc2190fc98", size = 1460830, upload-time = "2025-10-27T08:28:23.028Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a8/45/a132b9074aa18e799b891b91ad72133c98d8042c70f6240e4c5f9dabee2f/structlog-25.5.0-py3-none-any.whl", hash = "sha256:a8453e9b9e636ec59bd9e79bbd4a72f025981b3ba0f5837aebf48f02f37a7f9f", size = 72510, upload-time = "2025-10-27T08:28:21.535Z" },
+]
+
+[[package]]
+name = "teo-mypy-config-shared"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/4d/d1c95d9b24f25f2a36bacee9ac34c29d3b27b1104a335bdf5ab746d07f2d/teo_mypy_config_shared-0.1.0.tar.gz", hash = "sha256:384eafe377f040f99b19ec1a031973fc8366852381df41178d259d9de1ead30c", size = 16131, upload-time = "2026-05-07T02:00:08.779Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/d3/fde18b8d3f2209dad252a99d905e74f8a019db88660bc651ebfc8fcc37d3/teo_mypy_config_shared-0.1.0-py3-none-any.whl", hash = "sha256:0e664c410d0e01cab33180a5fe4baf19e53387710a301d2d34cf9727b9141c52", size = 3535, upload-time = "2026-05-07T02:00:07.493Z" },
+]
+
+[[package]]
+name = "teo-pytest-config-shared"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/46/fdc098c770313af6ec22138a893956da7e1efe5972c51e56d2b7a888fc74/teo_pytest_config_shared-0.1.0.tar.gz", hash = "sha256:e752345fb47f1b6681264273a362e73aa1b367e6308cdc079628033e5245bb21", size = 17022, upload-time = "2026-05-07T02:06:39.689Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/ee/7a316510b02a9ed176e2f386ef4d90b221a9fd9eba724227df6aa64ba917/teo_pytest_config_shared-0.1.0-py3-none-any.whl", hash = "sha256:03f30936f8d1b084ef97051f8c6ce7b4c9e7e20f1293c123903a4f8906f2bce4", size = 3664, upload-time = "2026-05-07T02:06:38.361Z" },
+]
+
+[[package]]
+name = "teo-ruff-config-shared"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/8a/eef9887c48071fd32ddbf6174f6e24a9f64f776e2dbe1d675f4df0b69952/teo_ruff_config_shared-0.1.0.tar.gz", hash = "sha256:610e3b620659e858867ec1f382114b91bd3d57b7fbd0ce76673e677ed190c1f9", size = 6712, upload-time = "2026-05-07T02:00:11.841Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/fd/71842284bf1b32b0f6f5da7b210403b7795e50a716392e55c2584698ccfc/teo_ruff_config_shared-0.1.0-py3-none-any.whl", hash = "sha256:9bed8048294e6f12e967904c1348ef8ec5f6041a35304020b596d30c4572c950", size = 3804, upload-time = "2026-05-07T02:00:10.516Z" },
 ]
 
 [[package]]

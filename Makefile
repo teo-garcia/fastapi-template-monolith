@@ -1,4 +1,4 @@
-.PHONY: dev start build lint lint-check lint-types format format-check test test-cov test-e2e check db-migrate db-deploy db-reset db-seed docker-dev
+.PHONY: dev start build ruff-config lint lint-check lint-types format format-check test test-cov test-e2e check db-migrate db-deploy db-reset db-seed docker-dev
 
 # -- Development --
 
@@ -13,19 +13,22 @@ build:
 
 # -- Quality --
 
-lint:
+ruff-config:
+	@printf 'extend = "%s"\n' "$$(uv run teo-ruff-config-path)" > ruff.extend.toml
+
+lint: ruff-config
 	uv run ruff check --fix .
 
-lint-check:
+lint-check: ruff-config
 	uv run ruff check .
 
 lint-types:
 	uv run mypy .
 
-format:
+format: ruff-config
 	uv run ruff format .
 
-format-check:
+format-check: ruff-config
 	uv run ruff format --check .
 
 test:

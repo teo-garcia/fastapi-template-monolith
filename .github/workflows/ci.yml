@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Generate Ruff shared config
+        run: printf 'extend = "%s"\n' "$(uv run teo-ruff-config-path)" > ruff.extend.toml
+
       - name: Lint
         run: uv run ruff check .
 

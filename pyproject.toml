@@ -28,6 +28,9 @@ dev = [
     "mypy>=1.14",
     "ruff>=0.8",
     "pre-commit>=4.0",
+    "teo-ruff-config-shared==0.1.0",
+    "teo-mypy-config-shared==0.1.0",
+    "teo-pytest-config-shared==0.1.0",
 ]
 
 [build-system]
@@ -40,26 +43,9 @@ packages = ["app"]
 # -- Ruff (lint + format) --
 
 [tool.ruff]
-target-version = "py312"
-line-length = 120
+extend = "ruff.extend.toml"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "N",   # pep8-naming
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-    "S",   # flake8-bandit (security)
-    "A",   # flake8-builtins
-    "C4",  # flake8-comprehensions
-    "DTZ", # flake8-datetimez
-    "T20", # flake8-print
-    "SIM", # flake8-simplify
-    "RUF", # ruff-specific
-]
 ignore = [
     "B008", # Depends() in default args is the standard FastAPI DI pattern
 ]
@@ -67,9 +53,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
 "alembic/**" = ["UP", "I"]
-
-[tool.ruff.format]
-quote-style = "double"
 
 # -- mypy --
 
@@ -88,6 +71,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--strict-markers"
 markers = ["e2e: end-to-end tests requiring database and redis"]
 
 [tool.coverage.run]

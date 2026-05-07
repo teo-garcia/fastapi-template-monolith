@@ -41,6 +41,7 @@ htmlcov/
 
 # ruff
 .ruff_cache/
+ruff.extend.toml
 
 # Logs
 logs/
