@@ -1,4 +1,5 @@
 from functools import lru_cache
+from urllib.parse import quote
 
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -51,6 +52,13 @@ class Settings(BaseSettings):
     def sync_database_url(self) -> str:
         """Sync URL for Alembic migrations (replaces asyncpg with psycopg)."""
         return self.database_url.replace("+asyncpg", "")
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def redis_url(self) -> str:
+        """Redis URL shared by app clients and rate-limit storage."""
+        password = f":{quote(self.redis_password, safe='')}@" if self.redis_password else ""
+        return f"redis://{password}{self.redis_host}:{self.redis_port}/0"
 
 
 @lru_cache(maxsize=1)

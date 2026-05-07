@@ -14,14 +14,12 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies:
-          - pydantic
-          - pydantic-settings
-        args: [--ignore-missing-imports]
+        name: Type check
+        entry: uv run mypy .
+        language: system
         pass_filenames: false
 
   - repo: https://github.com/commitizen-tools/commitizen

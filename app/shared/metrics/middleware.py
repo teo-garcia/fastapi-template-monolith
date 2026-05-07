@@ -5,17 +5,25 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
+UNKNOWN_ROUTE = "__unknown__"
+
 REQUEST_COUNT = Counter(
     "http_requests_total",
     "Total HTTP requests",
-    ["method", "path", "status"],
+    ["method", "route", "status"],
 )
 
 REQUEST_DURATION = Histogram(
     "http_request_duration_seconds",
     "HTTP request duration in seconds",
-    ["method", "path"],
+    ["method", "route"],
 )
+
+
+def _route_label(request: Request) -> str:
+    route = request.scope.get("route")
+    path = getattr(route, "path", None)
+    return path if isinstance(path, str) else UNKNOWN_ROUTE
 
 
 class MetricsMiddleware(BaseHTTPMiddleware):
@@ -26,8 +34,8 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         duration = time.perf_counter() - start
 
-        path = request.url.path
-        REQUEST_COUNT.labels(method=request.method, path=path, status=response.status_code).inc()
-        REQUEST_DURATION.labels(method=request.method, path=path).observe(duration)
+        route = _route_label(request)
+        REQUEST_COUNT.labels(method=request.method, route=route, status=str(response.status_code)).inc()
+        REQUEST_DURATION.labels(method=request.method, route=route).observe(duration)
 
         return response

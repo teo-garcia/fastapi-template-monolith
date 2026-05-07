@@ -1,5 +1,3 @@
-import signal
-import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -37,16 +35,6 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await dispose_engine()
 
 
-def _setup_shutdown_hooks(timeout: int) -> None:
-    def _force_exit(signum: int, _frame: object) -> None:
-        name = signal.Signals(signum).name
-        print(f"{name} received, forcing exit after {timeout}s timeout", file=sys.stderr)  # noqa: T201
-        sys.exit(1)
-
-    signal.signal(signal.SIGTERM, _force_exit)
-    signal.signal(signal.SIGINT, _force_exit)
-
-
 def create_app() -> FastAPI:
     settings = get_settings()
 
@@ -80,7 +68,11 @@ def create_app() -> FastAPI:
     from slowapi import Limiter
     from slowapi.util import get_remote_address
 
-    limiter = Limiter(key_func=get_remote_address, default_limits=[settings.throttle_limit])
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[settings.throttle_limit],
+        storage_uri=settings.redis_url,
+    )
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
@@ -100,8 +92,6 @@ def create_app() -> FastAPI:
     if settings.metrics_enabled:
         app.include_router(metrics_router)
     app.include_router(tasks_router, prefix=settings.api_prefix)
-
-    _setup_shutdown_hooks(settings.shutdown_timeout)
 
     return app
 
