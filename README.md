@@ -6,7 +6,7 @@
 Prometheus metrics, and full CI/CD**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://python.org)
 [![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9)](https://docs.astral.sh/uv/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17+-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
@@ -35,11 +35,17 @@ ecosystem
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.12
 - uv (package manager)
 - Docker and Docker Compose
 - PostgreSQL 17+
 - Redis
+
+## Runtime Support
+
+This template targets Python 3.12 only. Local development, Docker images, and CI
+all use Python 3.12; widening that support matrix requires a governance update
+plus lockfile, image, and CI validation.
 
 ---
 

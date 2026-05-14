@@ -6,7 +6,7 @@ dev:
 	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 start:
-	uv run gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+	uv run gunicorn app.main:app -k uvicorn_worker.UvicornWorker --bind 0.0.0.0:8000
 
 build:
 	docker build -f docker/Dockerfile -t fastapi-template-monolith .
