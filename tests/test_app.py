@@ -25,6 +25,13 @@ async def test_openapi_schema_available(client: AsyncClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["info"]["title"] == "FastAPI Monolith Template"
+    schemas = data["components"]["schemas"]
+    assert "ErrorEnvelope" in schemas
+    assert "TaskListResponse" in schemas
+    assert (
+        data["paths"]["/api/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/TaskListResponse"
+    )
 
 
 @pytest.mark.e2e

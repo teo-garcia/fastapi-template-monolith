@@ -29,3 +29,16 @@ class TaskResponse(BaseModel):
     priority: int
     created_at: datetime
     updated_at: datetime
+
+
+class PaginationMeta(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    total: int = Field(..., ge=0)
+    page: int = Field(..., ge=1)
+    page_size: int = Field(..., alias="pageSize", ge=1, le=100)
+
+
+class TaskListResponse(BaseModel):
+    data: list[TaskResponse]
+    meta: PaginationMeta

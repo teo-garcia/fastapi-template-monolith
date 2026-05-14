@@ -39,8 +39,21 @@ class TestTasksCRUD:
         response = await client.get(f"{API_PREFIX}/tasks/")
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) >= 1
+        assert isinstance(data["data"], list)
+        assert len(data["data"]) >= 1
+        assert data["meta"]["total"] >= 1
+        assert data["meta"]["page"] == 1
+        assert data["meta"]["pageSize"] == 20
+
+    async def test_list_tasks_paginates_results(self, client: AsyncClient) -> None:
+        await client.post(f"{API_PREFIX}/tasks/", json={"title": "First", "priority": 1})
+        await client.post(f"{API_PREFIX}/tasks/", json={"title": "Second", "priority": 2})
+
+        response = await client.get(f"{API_PREFIX}/tasks/?page=1&pageSize=1")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["data"]) == 1
+        assert data["meta"] == {"total": 2, "page": 1, "pageSize": 1}
 
     async def test_list_tasks_supports_status_and_priority_filters(self, client: AsyncClient) -> None:
         await client.post(
@@ -55,9 +68,9 @@ class TestTasksCRUD:
         response = await client.get(f"{API_PREFIX}/tasks/?status=IN_PROGRESS&priority=5")
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
-        assert data[0]["status"] == "IN_PROGRESS"
-        assert data[0]["priority"] >= 5
+        assert len(data["data"]) == 1
+        assert data["data"][0]["status"] == "IN_PROGRESS"
+        assert data["data"][0]["priority"] >= 5
 
     async def test_get_task(self, client: AsyncClient) -> None:
         create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to get"})
