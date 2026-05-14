@@ -72,6 +72,8 @@ def create_app() -> FastAPI:
         key_func=get_remote_address,
         default_limits=[settings.throttle_limit],
         storage_uri=settings.redis_url,
+        in_memory_fallback_enabled=True,
+        swallow_errors=True,
     )
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
