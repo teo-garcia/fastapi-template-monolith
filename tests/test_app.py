@@ -29,7 +29,7 @@ async def test_openapi_schema_available(client: AsyncClient) -> None:
     assert "ErrorEnvelope" in schemas
     assert "TaskListResponse" in schemas
     assert (
-        data["paths"]["/api/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
+        data["paths"]["/api/v1/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
         == "#/components/schemas/TaskListResponse"
     )
 

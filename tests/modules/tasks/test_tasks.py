@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-API_PREFIX = "/api"
+API_PREFIX = "/api/v1"
 
 
 def assert_error_envelope(data: dict[str, object], status_code: int, method: str) -> None:

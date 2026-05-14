@@ -81,6 +81,7 @@ The app starts on `http://localhost:8000` and the OpenAPI docs are available at
 | `make db-migrate msg="description"` | Create new migration                     |
 | `make db-deploy`                    | Apply migrations                         |
 | `make db-reset`                     | Reset database                           |
+| `make db-seed`                      | Seed deterministic sample data           |
 
 ---
 
@@ -102,6 +103,7 @@ Structured logs via structlog with request ID propagation.
 | Variable       | Description                  | Default       |
 | -------------- | ---------------------------- | ------------- |
 | `DATABASE_URL` | PostgreSQL connection string | Required      |
+| `API_PREFIX`   | Versioned API route prefix   | `/api/v1`     |
 | `REDIS_URL`    | Redis connection string      | Required      |
 | `LOG_LEVEL`    | Logging verbosity            | `info`        |
 | `ENVIRONMENT`  | Runtime environment          | `development` |

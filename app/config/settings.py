@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     app_version: str = "1"
     debug: bool = False
     port: int = 8000
-    api_prefix: str = "/api"
+    api_prefix: str = "/api/v1"
     shutdown_timeout: int = 10
 
     # Database

@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config.settings import Settings, get_settings
@@ -17,8 +18,10 @@ def get_test_settings() -> Settings:
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def client(monkeypatch: MonkeyPatch) -> AsyncGenerator[AsyncClient, None]:
     settings = get_test_settings()
+    monkeypatch.setenv("API_PREFIX", settings.api_prefix)
+    get_settings.cache_clear()
     engine = create_async_engine(settings.database_url, echo=False)
 
     async with engine.begin() as conn:
@@ -47,3 +50,4 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+    get_settings.cache_clear()
