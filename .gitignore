@@ -20,8 +20,9 @@ venv/
 .env.*.bak
 
 # IDE
-.vscode/
+.vscode/*
 !.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
