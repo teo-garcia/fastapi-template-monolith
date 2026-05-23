@@ -85,6 +85,30 @@ The app starts on `http://localhost:8000` and the OpenAPI docs are available at
 
 ---
 
+## Migration Safety
+
+Run Alembic migrations as a pre-deploy step with `make db-deploy` before the new
+application version starts. Do not run migrations from application startup,
+request handlers, seed scripts, or tests that point at a shared database.
+
+Production migrations must be backward-compatible with the currently running
+version. Use expand-contract changes: add nullable columns, new tables, and new
+indexes before code depends on them; backfill explicitly when needed; deploy code
+that stops reading the old shape; then remove or narrow schema in a later
+release.
+
+`make db-deploy` is safe to re-run when there are no pending migrations.
+Production rollback is a database backup restore plus compatible code, or a
+forward-fix migration. Alembic downgrade commands may be useful locally, but this
+template does not treat down migrations as the primary production rollback
+strategy. `make db-reset` is local/test-only.
+
+Avoid destructive one-step migrations, renaming columns without a compatibility
+window, adding non-null columns without defaults/backfills, and combining schema
+contraction with the first code release that stops using the old shape.
+
+---
+
 ## Health and Observability
 
 | Endpoint           | Description                        |
