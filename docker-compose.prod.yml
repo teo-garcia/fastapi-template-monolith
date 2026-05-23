@@ -1,0 +1,39 @@
+services:
+  db:
+    ports: !reset []
+    volumes: !override
+      - postgres_data:/var/lib/postgresql
+
+  redis:
+    ports: !reset []
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      APP_NAME: ${APP_NAME:-FastAPI Monolith Template}
+      APP_VERSION: ${APP_VERSION:-1}
+      DEBUG: "false"
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      SHUTDOWN_TIMEOUT: ${SHUTDOWN_TIMEOUT:-10}
+      DATABASE_URL: postgresql+asyncpg://${DATABASE_USER:-postgres}:${DATABASE_PASSWORD:-postgres}@db:5432/${DATABASE_NAME:-fastapi_monolith}
+      DATABASE_ECHO: "false"
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-5}
+      DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-10}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_TTL: ${REDIS_TTL:-3600}
+      PORT: ${PORT:-8000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_JSON: "true"
+      CORS_ENABLED: ${CORS_ENABLED:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN:?Set CORS_ORIGIN to the deployed frontend origin}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100/minute}
+      METRICS_ENABLED: ${METRICS_ENABLED:-true}
+    volumes: !reset []
+
+  pgadmin:
+    profiles:
+      - local-tools

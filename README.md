@@ -134,6 +134,19 @@ Structured logs via structlog with request ID propagation.
 
 See `.env.example` for the full list.
 
+### Environment Promotion
+
+Use `.env.example` as the complete variable inventory, then review values before
+promoting beyond local development:
+
+- Keep `DEBUG=false`, `LOG_LEVEL=info`, and `LOG_JSON=true`.
+- Replace local Postgres, Redis, and pgAdmin defaults; pgAdmin is local-only.
+- Set `CORS_ORIGIN` to the deployed frontend origin. Do not use wildcards.
+- Size `DATABASE_POOL_SIZE` and `DATABASE_MAX_OVERFLOW` for the deployment.
+- Production schema changes go through `make db-deploy`.
+- Use `docker-compose.prod.yml` for a production-like local smoke test:
+  `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
+
 ---
 
 ## Project Structure
