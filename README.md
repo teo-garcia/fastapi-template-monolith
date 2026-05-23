@@ -127,6 +127,7 @@ Structured logs via structlog with request ID propagation.
 | Variable       | Description                  | Default       |
 | -------------- | ---------------------------- | ------------- |
 | `DATABASE_URL` | PostgreSQL connection string | Required      |
+| `HTTP_PORT`    | Nginx host port in production compose | `8080` |
 | `API_PREFIX`   | Versioned API route prefix   | `/api/v1`     |
 | `REDIS_URL`    | Redis connection string      | Required      |
 | `LOG_LEVEL`    | Logging verbosity            | `info`        |
@@ -146,6 +147,8 @@ promoting beyond local development:
 - Production schema changes go through `make db-deploy`.
 - Use `docker-compose.prod.yml` for a production-like local smoke test:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
+  Nginx is the public entry point on `HTTP_PORT`; the app, Postgres, and Redis
+  ports are internal to the Compose network.
 
 ---
 
