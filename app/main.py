@@ -20,6 +20,7 @@ from app.shared.middleware.logging_mw import LoggingMiddleware
 from app.shared.middleware.request_id import RequestIdMiddleware
 from app.shared.middleware.security_headers import SecurityHeadersMiddleware
 from app.shared.redis.client import redis_client
+from app.shared.telemetry import configure_telemetry, shutdown_telemetry
 
 logger = structlog.get_logger("app")
 
@@ -33,6 +34,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await logger.ainfo("shutting_down")
     await redis_client.aclose()
     await dispose_engine()
+    shutdown_telemetry()
 
 
 def create_app() -> FastAPI:
@@ -46,6 +48,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
         lifespan=lifespan,
     )
+    configure_telemetry(settings, app)
 
     # Middleware stack (last added = first executed)
     if settings.metrics_enabled:

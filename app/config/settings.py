@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     # Metrics
     metrics_enabled: bool = True
 
+    # Tracing
+    otel_enabled: bool = True
+    otel_service_name: str = "fastapi-template-monolith"
+    otel_exporter_otlp_traces_endpoint: str = "http://localhost:4318/v1/traces"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def sync_database_url(self) -> str:
