@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest_asyncio
@@ -11,10 +12,16 @@ from app.modules.tasks.models import Task  # noqa: F401
 from app.shared.database.base import Base
 from app.shared.database.engine import get_db
 from app.shared.redis.client import get_redis
+from tests.database_safety import require_test_database, require_test_env_file
+
+ENV_TEST_PATH = Path(__file__).resolve().parent.parent / ".env.test"
 
 
 def get_test_settings() -> Settings:
-    return Settings(_env_file=".env.test")
+    require_test_env_file(ENV_TEST_PATH)
+    settings = Settings(_env_file=ENV_TEST_PATH)
+    require_test_database(settings.database_url)
+    return settings
 
 
 @pytest_asyncio.fixture
