@@ -198,8 +198,8 @@ promoting beyond local development:
 | ------------------------------ | -------------------------- |
 | `nest-template-monolith`       | NestJS equivalent          |
 | `fastapi-template-microservice` | FastAPI microservice      |
-| `react-template-next`          | Next.js frontend           |
-| `react-template-rr`            | React Router frontend      |
+| `next-template-fullstack`         | Next.js full-stack app      |
+| `react-router-template-fullstack` | React Router full-stack app |
 
 ---
 
