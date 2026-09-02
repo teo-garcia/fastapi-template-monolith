@@ -88,4 +88,12 @@ omit = ["tests/*", "alembic/*"]
 
 [tool.coverage.report]
 show_missing = true
+# Enforced here because this template's suite clears it. Templates whose
+# starter suite cannot are not held to a floor -- see PARITY.md section 1.
 fail_under = 80
+
+[tool.coverage.html]
+directory = "coverage/html"
+
+[tool.coverage.lcov]
+output = "coverage/lcov.info"

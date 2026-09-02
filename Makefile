@@ -35,7 +35,7 @@ test:
 	uv run pytest
 
 test-cov:
-	uv run pytest --cov
+	uv run pytest --cov --cov-report=term-missing --cov-report=lcov --cov-report=html
 
 test-e2e:
 	uv run pytest -m e2e
