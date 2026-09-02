@@ -44,8 +44,7 @@ ecosystem
 ## Runtime Support
 
 This template targets Python 3.12 only. Local development, Docker images, and CI
-all use Python 3.12; widening that support matrix requires a governance update
-plus lockfile, image, and CI validation.
+all use Python 3.12 so their runtime behavior stays aligned.
 
 ---
 
@@ -165,19 +164,7 @@ promoting beyond local development:
 
 ---
 
-## Shared Governance
-
-| Area               | Tooling                                             |
-| ------------------ | --------------------------------------------------- |
-| Dependency updates | Renovate                                            |
-| Issue intake       | GitHub issue templates                              |
-| Change review      | Pull request template                               |
-| CI                 | GitHub Actions for lint, format, typecheck, and test |
-| Security           | Trivy, dependency review, and `pip-audit`           |
-
----
-
-## Tooling Comparison (NestJS Parity)
+## Tooling
 
 | NestJS             | FastAPI                   | Role               |
 | ------------------ | ------------------------- | ------------------ |
