@@ -1,5 +1,7 @@
+from typing import Any
+
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 
 API_PREFIX = "/api/v1"
 
@@ -17,6 +19,24 @@ def assert_error_envelope(data: dict[str, object], status_code: int, method: str
     assert isinstance(meta["requestId"], str)
 
 
+def assert_success_envelope(data: dict[str, object], status_code: int, method: str) -> None:
+    assert data["success"] is True
+    assert data["statusCode"] == status_code
+    assert data["method"] == method
+    assert isinstance(data["timestamp"], str)
+    assert isinstance(data["path"], str)
+    meta = data["meta"]
+    assert isinstance(meta, dict)
+    assert isinstance(meta["requestId"], str)
+    assert isinstance(meta["version"], str)
+    assert isinstance(meta["duration"], int)
+
+
+def payload(response: Response) -> Any:
+    """Unwrap the success envelope: handlers return their payload under `data`."""
+    return response.json()["data"]
+
+
 @pytest.mark.e2e
 class TestTasksCRUD:
     async def test_create_task(self, client: AsyncClient) -> None:
@@ -25,7 +45,8 @@ class TestTasksCRUD:
             json={"title": "Test task", "description": "A test task", "priority": 3},
         )
         assert response.status_code == 201
-        data = response.json()
+        assert_success_envelope(response.json(), 201, "POST")
+        data = payload(response)
         assert data["title"] == "Test task"
         assert data["description"] == "A test task"
         assert data["status"] == "PENDING"
@@ -38,7 +59,8 @@ class TestTasksCRUD:
         await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task for listing"})
         response = await client.get(f"{API_PREFIX}/tasks/")
         assert response.status_code == 200
-        data = response.json()
+        assert_success_envelope(response.json(), 200, "GET")
+        data = payload(response)
         assert isinstance(data["data"], list)
         assert len(data["data"]) >= 1
         assert data["meta"]["total"] >= 1
@@ -51,7 +73,7 @@ class TestTasksCRUD:
 
         response = await client.get(f"{API_PREFIX}/tasks/?page=1&pageSize=1")
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert len(data["data"]) == 1
         assert data["meta"] == {"total": 2, "page": 1, "pageSize": 1}
 
@@ -67,35 +89,35 @@ class TestTasksCRUD:
 
         response = await client.get(f"{API_PREFIX}/tasks/?status=IN_PROGRESS&priority=5")
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert len(data["data"]) == 1
         assert data["data"][0]["status"] == "IN_PROGRESS"
         assert data["data"][0]["priority"] >= 5
 
     async def test_get_task(self, client: AsyncClient) -> None:
         create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to get"})
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
 
         response = await client.get(f"{API_PREFIX}/tasks/{task_id}")
         assert response.status_code == 200
-        assert response.json()["title"] == "Task to get"
+        assert payload(response)["title"] == "Task to get"
 
     async def test_update_task(self, client: AsyncClient) -> None:
         create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to update"})
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
 
         response = await client.patch(
             f"{API_PREFIX}/tasks/{task_id}",
             json={"title": "Updated title", "status": "IN_PROGRESS"},
         )
         assert response.status_code == 200
-        data = response.json()
+        data = payload(response)
         assert data["title"] == "Updated title"
         assert data["status"] == "IN_PROGRESS"
 
     async def test_delete_task(self, client: AsyncClient) -> None:
         create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to delete"})
-        task_id = create_resp.json()["id"]
+        task_id = payload(create_resp)["id"]
 
         response = await client.delete(f"{API_PREFIX}/tasks/{task_id}")
         assert response.status_code == 204

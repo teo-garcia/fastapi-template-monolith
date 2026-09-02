@@ -18,7 +18,9 @@ from app.shared.metrics.middleware import MetricsMiddleware
 from app.shared.metrics.router import router as metrics_router
 from app.shared.middleware.logging_mw import LoggingMiddleware
 from app.shared.middleware.request_id import RequestIdMiddleware
+from app.shared.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.middleware.security_headers import SecurityHeadersMiddleware
+from app.shared.openapi.envelope import custom_openapi
 from app.shared.redis.client import redis_client
 from app.shared.telemetry import configure_telemetry, shutdown_telemetry
 
@@ -53,6 +55,7 @@ def create_app() -> FastAPI:
     # Middleware stack (last added = first executed)
     if settings.metrics_enabled:
         app.add_middleware(MetricsMiddleware)
+    app.add_middleware(ResponseEnvelopeMiddleware)
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RequestIdMiddleware)
@@ -97,6 +100,9 @@ def create_app() -> FastAPI:
     if settings.metrics_enabled:
         app.include_router(metrics_router)
     app.include_router(tasks_router, prefix=settings.api_prefix)
+
+    # Documented after the routers are mounted so every operation is wrapped.
+    app.openapi = lambda: custom_openapi(app)  # type: ignore[method-assign]
 
     return app
 
