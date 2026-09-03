@@ -34,7 +34,7 @@ async def test_openapi_schema_available(client: AsyncClient) -> None:
 
     # Successful payloads travel inside the envelope, so the documented schema
     # must describe the wrapper with the payload under `data`.
-    list_schema = data["paths"]["/api/v1/tasks/"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    list_schema = data["paths"]["/api/v1/tasks"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
     assert list_schema["allOf"][0]["$ref"] == "#/components/schemas/SuccessEnvelope"
     assert list_schema["allOf"][1]["properties"]["data"]["$ref"] == "#/components/schemas/TaskListResponse"
 
@@ -65,3 +65,25 @@ async def test_docs_available_when_rate_limit_storage_is_unavailable(monkeypatch
 
     assert docs_response.status_code == 200
     assert root_response.status_code == 200
+    assert "x-ratelimit-limit" not in docs_response.headers
+    assert "x-ratelimit-limit" not in root_response.headers
+
+
+@pytest.mark.e2e
+async def test_unknown_route_uses_error_envelope(client: AsyncClient) -> None:
+    response = await client.get(
+        "/missing",
+        headers={"x-request-id": "00000000-0000-4000-8000-000000000001"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "success": False,
+        "statusCode": 404,
+        "timestamp": response.json()["timestamp"],
+        "path": "/missing",
+        "method": "GET",
+        "message": "Not Found",
+        "error": "HTTPException",
+        "meta": {"requestId": "00000000-0000-4000-8000-000000000001"},
+    }

@@ -41,7 +41,7 @@ def payload(response: Response) -> Any:
 class TestTasksCRUD:
     async def test_create_task(self, client: AsyncClient) -> None:
         response = await client.post(
-            f"{API_PREFIX}/tasks/",
+            f"{API_PREFIX}/tasks",
             json={"title": "Test task", "description": "A test task", "priority": 3},
         )
         assert response.status_code == 201
@@ -56,9 +56,12 @@ class TestTasksCRUD:
         assert "updated_at" in data
 
     async def test_list_tasks(self, client: AsyncClient) -> None:
-        await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task for listing"})
-        response = await client.get(f"{API_PREFIX}/tasks/")
+        await client.post(f"{API_PREFIX}/tasks", json={"title": "Task for listing"})
+        response = await client.get(f"{API_PREFIX}/tasks")
         assert response.status_code == 200
+        for header in ("x-ratelimit-limit", "x-ratelimit-remaining"):
+            assert response.headers[header].isdigit()
+        assert float(response.headers["x-ratelimit-reset"]) > 0
         assert_success_envelope(response.json(), 200, "GET")
         data = payload(response)
         assert isinstance(data["data"], list)
@@ -68,10 +71,10 @@ class TestTasksCRUD:
         assert data["meta"]["pageSize"] == 20
 
     async def test_list_tasks_paginates_results(self, client: AsyncClient) -> None:
-        await client.post(f"{API_PREFIX}/tasks/", json={"title": "First", "priority": 1})
-        await client.post(f"{API_PREFIX}/tasks/", json={"title": "Second", "priority": 2})
+        await client.post(f"{API_PREFIX}/tasks", json={"title": "First", "priority": 1})
+        await client.post(f"{API_PREFIX}/tasks", json={"title": "Second", "priority": 2})
 
-        response = await client.get(f"{API_PREFIX}/tasks/?page=1&pageSize=1")
+        response = await client.get(f"{API_PREFIX}/tasks?page=1&pageSize=1")
         assert response.status_code == 200
         data = payload(response)
         assert len(data["data"]) == 1
@@ -79,15 +82,15 @@ class TestTasksCRUD:
 
     async def test_list_tasks_supports_status_and_priority_filters(self, client: AsyncClient) -> None:
         await client.post(
-            f"{API_PREFIX}/tasks/",
+            f"{API_PREFIX}/tasks",
             json={"title": "Low pending", "priority": 1, "status": "PENDING"},
         )
         await client.post(
-            f"{API_PREFIX}/tasks/",
+            f"{API_PREFIX}/tasks",
             json={"title": "High in progress", "priority": 5, "status": "IN_PROGRESS"},
         )
 
-        response = await client.get(f"{API_PREFIX}/tasks/?status=IN_PROGRESS&priority=5")
+        response = await client.get(f"{API_PREFIX}/tasks?status=IN_PROGRESS&priority=5")
         assert response.status_code == 200
         data = payload(response)
         assert len(data["data"]) == 1
@@ -95,7 +98,7 @@ class TestTasksCRUD:
         assert data["data"][0]["priority"] >= 5
 
     async def test_get_task(self, client: AsyncClient) -> None:
-        create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to get"})
+        create_resp = await client.post(f"{API_PREFIX}/tasks", json={"title": "Task to get"})
         task_id = payload(create_resp)["id"]
 
         response = await client.get(f"{API_PREFIX}/tasks/{task_id}")
@@ -103,7 +106,7 @@ class TestTasksCRUD:
         assert payload(response)["title"] == "Task to get"
 
     async def test_update_task(self, client: AsyncClient) -> None:
-        create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to update"})
+        create_resp = await client.post(f"{API_PREFIX}/tasks", json={"title": "Task to update"})
         task_id = payload(create_resp)["id"]
 
         response = await client.patch(
@@ -116,7 +119,7 @@ class TestTasksCRUD:
         assert data["status"] == "IN_PROGRESS"
 
     async def test_delete_task(self, client: AsyncClient) -> None:
-        create_resp = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Task to delete"})
+        create_resp = await client.post(f"{API_PREFIX}/tasks", json={"title": "Task to delete"})
         task_id = payload(create_resp)["id"]
 
         response = await client.delete(f"{API_PREFIX}/tasks/{task_id}")
@@ -129,20 +132,20 @@ class TestTasksCRUD:
 @pytest.mark.e2e
 class TestTasksValidation:
     async def test_create_task_empty_title_rejected(self, client: AsyncClient) -> None:
-        response = await client.post(f"{API_PREFIX}/tasks/", json={"title": ""})
+        response = await client.post(f"{API_PREFIX}/tasks", json={"title": ""})
         assert response.status_code == 422
         assert_error_envelope(response.json(), 422, "POST")
 
     async def test_create_task_missing_title_rejected(self, client: AsyncClient) -> None:
-        response = await client.post(f"{API_PREFIX}/tasks/", json={"description": "no title"})
+        response = await client.post(f"{API_PREFIX}/tasks", json={"description": "no title"})
         assert response.status_code == 422
 
     async def test_create_task_invalid_priority_rejected(self, client: AsyncClient) -> None:
-        response = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Bad priority", "priority": 99})
+        response = await client.post(f"{API_PREFIX}/tasks", json={"title": "Bad priority", "priority": 99})
         assert response.status_code == 422
 
     async def test_create_task_invalid_status_rejected(self, client: AsyncClient) -> None:
-        response = await client.post(f"{API_PREFIX}/tasks/", json={"title": "Bad status", "status": "INVALID"})
+        response = await client.post(f"{API_PREFIX}/tasks", json={"title": "Bad status", "status": "INVALID"})
         assert response.status_code == 422
 
 

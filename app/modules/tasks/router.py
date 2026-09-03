@@ -21,7 +21,7 @@ def _get_service(db: AsyncSession = Depends(get_db)) -> TasksService:
     return TasksService(db)
 
 
-@router.get("/", response_model=TaskListResponse, responses={422: {"model": ErrorEnvelope}})
+@router.get("", response_model=TaskListResponse, responses={422: {"model": ErrorEnvelope}})
 async def list_tasks(
     status: TaskStatus | None = None,
     priority: int | None = Query(default=None, ge=0, le=10),
@@ -43,7 +43,7 @@ async def get_task(task_id: str, service: TasksService = Depends(_get_service)) 
 
 
 @router.post(
-    "/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED, responses={422: {"model": ErrorEnvelope}}
+    "", response_model=TaskResponse, status_code=status.HTTP_201_CREATED, responses={422: {"model": ErrorEnvelope}}
 )
 async def create_task(data: CreateTaskSchema, service: TasksService = Depends(_get_service)) -> TaskResponse:
     task = await service.create(data)

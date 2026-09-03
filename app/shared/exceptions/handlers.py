@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = structlog.get_logger("exceptions")
 
@@ -39,7 +40,9 @@ def _api_error_body(
     return body
 
 
-async def _http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def _http_exception_handler(
+    request: Request, exc: HTTPException | StarletteHTTPException
+) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content=_api_error_body(request, exc.status_code, str(exc.detail), type(exc).__name__),
@@ -82,6 +85,7 @@ async def _unhandled_error_handler(request: Request, exc: Exception) -> JSONResp
 
 def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(HTTPException, _http_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(StarletteHTTPException, _http_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, _validation_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(IntegrityError, _integrity_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, _unhandled_error_handler)

@@ -77,6 +77,7 @@ def create_app() -> FastAPI:
     limiter = Limiter(
         key_func=get_remote_address,
         default_limits=[settings.throttle_limit],
+        headers_enabled=True,
         storage_uri=settings.redis_url,
         in_memory_fallback_enabled=True,
         swallow_errors=True,
@@ -100,6 +101,21 @@ def create_app() -> FastAPI:
     if settings.metrics_enabled:
         app.include_router(metrics_router)
     app.include_router(tasks_router, prefix=settings.api_prefix)
+
+    unthrottled_paths = {
+        "/",
+        "/docs",
+        "/docs/oauth2-redirect",
+        "/health",
+        "/health/live",
+        "/health/ready",
+        "/metrics",
+        "/openapi.json",
+        "/redoc",
+    }
+    for route in app.routes:
+        if getattr(route, "path", None) in unthrottled_paths:
+            limiter.exempt(route.endpoint)  # type: ignore[attr-defined,no-untyped-call]
 
     # Documented after the routers are mounted so every operation is wrapped.
     app.openapi = lambda: custom_openapi(app)  # type: ignore[method-assign]
