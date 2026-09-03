@@ -40,9 +40,7 @@ def _api_error_body(
     return body
 
 
-async def _http_exception_handler(
-    request: Request, exc: HTTPException | StarletteHTTPException
-) -> JSONResponse:
+async def _http_exception_handler(request: Request, exc: HTTPException | StarletteHTTPException) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content=_api_error_body(request, exc.status_code, str(exc.detail), type(exc).__name__),
