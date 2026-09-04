@@ -1,6 +1,13 @@
 import pytest
 from httpx import AsyncClient
 
+from app.shared.health.router import CHECK_DOWN, CHECK_UP, _resolve_status
+
+
+def test_health_status_reflects_dependency_failures() -> None:
+    assert _resolve_status({"database": CHECK_UP, "redis": CHECK_DOWN}) == "degraded"
+    assert _resolve_status({"database": CHECK_DOWN, "redis": CHECK_DOWN}) == "down"
+
 
 @pytest.mark.e2e
 async def test_liveness_reports_no_dependency_checks(client: AsyncClient) -> None:

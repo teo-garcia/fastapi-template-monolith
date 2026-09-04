@@ -88,8 +88,9 @@ omit = ["tests/*", "alembic/*"]
 
 [tool.coverage.report]
 show_missing = true
-# Enforced here because this template's suite clears it. Templates whose
-# starter suite cannot are not held to a floor -- see PARITY.md section 1.
+precision = 2
+# This suite must clear its declared floor; precision prevents rounded failures
+# from producing a successful exit status.
 fail_under = 80
 
 [tool.coverage.html]

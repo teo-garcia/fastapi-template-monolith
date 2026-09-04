@@ -6,7 +6,7 @@ dev:
 	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 start:
-	uv run gunicorn app.main:app -k uvicorn_worker.UvicornWorker --bind 0.0.0.0:8000
+	uv run gunicorn app.main:app -k uvicorn_worker.UvicornWorker --bind 0.0.0.0:8000 --no-control-socket
 
 build:
 	docker build -f docker/Dockerfile -t fastapi-template-monolith .
@@ -35,12 +35,12 @@ test:
 	uv run pytest
 
 test-cov:
-	uv run pytest --cov --cov-report=term-missing --cov-report=lcov --cov-report=html
+	uv run pytest --cov --cov-report=term-missing --cov-report=xml --cov-report=lcov --cov-report=html
 
 test-e2e:
 	uv run pytest -m e2e
 
-check: lint-check format-check lint-types test
+check: lint-check format-check lint-types test-cov
 
 # -- Database --
 

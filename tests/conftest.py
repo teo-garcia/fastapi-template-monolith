@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest_asyncio
+from dotenv import load_dotenv
 from httpx import ASGITransport, AsyncClient
 from pytest import MonkeyPatch
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -15,11 +16,15 @@ from app.shared.redis.client import get_redis
 from tests.database_safety import require_test_database, require_test_env_file
 
 ENV_TEST_PATH = Path(__file__).resolve().parent.parent / ".env.test"
+ENV_TEST_EXAMPLE_PATH = Path(__file__).resolve().parent.parent / ".env.test.example"
+ENV_TEST_SOURCE = ENV_TEST_PATH if ENV_TEST_PATH.is_file() else ENV_TEST_EXAMPLE_PATH
+
+require_test_env_file(ENV_TEST_SOURCE)
+load_dotenv(ENV_TEST_SOURCE, override=False)
 
 
 def get_test_settings() -> Settings:
-    require_test_env_file(ENV_TEST_PATH)
-    settings = Settings(_env_file=ENV_TEST_PATH)
+    settings = Settings(_env_file=ENV_TEST_SOURCE)
     require_test_database(settings.database_url)
     return settings
 

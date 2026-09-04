@@ -1,6 +1,10 @@
 name: Docker Build
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,8 +40,71 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          load: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            fastapi-template-monolith:ci
+            ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Start production dependencies
+        run: |
+          docker network create production-smoke
+          docker run --detach --name production-db \
+            --network production-smoke \
+            --env POSTGRES_USER=postgres \
+            --env POSTGRES_PASSWORD=postgres \
+            --env POSTGRES_DB=fastapi_monolith \
+            --health-cmd pg_isready \
+            --health-interval 1s \
+            --health-retries 30 \
+            postgres:18-alpine
+          docker run --detach --name production-redis \
+            --network production-smoke \
+            --health-cmd "redis-cli ping" \
+            --health-interval 1s \
+            --health-retries 30 \
+            redis:alpine
+
+      - name: Wait for production dependencies
+        run: |
+          for attempt in {1..30}; do
+            database="$(docker inspect --format '{{.State.Health.Status}}' production-db)"
+            redis="$(docker inspect --format '{{.State.Health.Status}}' production-redis)"
+            if [ "$database" = healthy ] && [ "$redis" = healthy ]; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs production-db
+          docker logs production-redis
+          exit 1
+
+      - name: Start production image
+        run: |
+          docker run --detach --name production-app \
+            --network production-smoke \
+            --publish 127.0.0.1:43118:8000 \
+            --env DATABASE_URL=postgresql+asyncpg://postgres:postgres@production-db:5432/fastapi_monolith \
+            --env REDIS_HOST=production-redis \
+            --env OTEL_ENABLED=false \
+            fastapi-template-monolith:ci
+
+      - name: Verify production image health
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:43118/health/live > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs production-app
+          exit 1
+
+      - name: Stop production stack
+        if: always()
+        run: |
+          docker rm --force production-app production-db production-redis 2>/dev/null || true
+          docker network rm production-smoke 2>/dev/null || true

@@ -56,23 +56,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
-      - name: Create test environment file
-        run: cp .env.test.example .env.test
-
-      - name: Generate Ruff shared config
-        run: printf 'extend = "%s"\n' "$(uv run teo-ruff-config-path)" > ruff.extend.toml
-
-      - name: Lint
-        run: uv run ruff check .
-
-      - name: Format check
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run mypy .
-
-      - name: Test
-        run: uv run pytest --cov --cov-report=xml
+      - name: Check
+        run: make check
         env:
           DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi_monolith_test
           REDIS_HOST: localhost

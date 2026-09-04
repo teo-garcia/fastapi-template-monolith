@@ -76,6 +76,7 @@ services:
       CORS_ORIGIN: http://localhost:3000
       THROTTLE_LIMIT: 100/minute
       METRICS_ENABLED: "true"
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
     ports:
       - "${PORT:-8000}:8000"
     volumes:
