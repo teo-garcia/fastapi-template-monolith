@@ -149,6 +149,14 @@ promoting beyond local development:
   Nginx is the public entry point on `HTTP_PORT`; the app, Postgres, and Redis
   ports are internal to the Compose network.
 
+### Container Releases
+
+Pushing a `vX.Y.Z` tag verifies the production image, then publishes semver tags
+to `ghcr.io/<owner>/<repository>` with an SBOM and provenance attestation. Run
+`make db-deploy` as a separate pre-deploy step. Roll back application code by
+deploying a prior immutable image digest; keep database changes compatible with
+both versions.
+
 ---
 
 ## Project Structure
