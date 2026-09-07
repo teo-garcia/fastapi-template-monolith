@@ -31,17 +31,18 @@ docker run --detach --name production-redis \
   --health-retries 30 \
   redis:alpine
 
-for _ in $(seq 1 30); do
-  database=$(docker inspect --format '{{.State.Health.Status}}' production-db)
-  redis=$(docker inspect --format '{{.State.Health.Status}}' production-redis)
-  if [[ $database == healthy && $redis == healthy ]]; then
+dependencies_ready=false
+for _ in $(seq 1 60); do
+  if docker logs production-db 2>&1 | grep --quiet "PostgreSQL init process complete" &&
+    docker exec production-db pg_isready -U postgres -d fastapi_monolith >/dev/null &&
+    docker exec production-redis redis-cli ping | grep --quiet PONG; then
+    dependencies_ready=true
     break
   fi
   sleep 1
 done
 
-if [[ $(docker inspect --format '{{.State.Health.Status}}' production-db) != healthy ]] ||
-  [[ $(docker inspect --format '{{.State.Health.Status}}' production-redis) != healthy ]]; then
+if [[ $dependencies_ready != true ]]; then
   docker logs production-db
   docker logs production-redis
   exit 1
