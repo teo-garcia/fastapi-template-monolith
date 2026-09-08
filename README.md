@@ -143,6 +143,9 @@ promoting beyond local development:
 - Replace local Postgres, Redis, and pgAdmin defaults; pgAdmin is local-only.
 - Set `CORS_ORIGIN` to the deployed frontend origin. Do not use wildcards.
 - Size `DATABASE_POOL_SIZE` and `DATABASE_MAX_OVERFLOW` for the deployment.
+- The image runs one Gunicorn worker per container so `/metrics` represents the
+  whole process. Scale containers horizontally instead of adding in-process
+  workers unless Prometheus multiprocess aggregation is configured first.
 - Production schema changes go through `make db-deploy`.
 - Use `docker-compose.prod.yml` for a production-like local smoke test:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build`.
