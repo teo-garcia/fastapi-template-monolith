@@ -36,7 +36,7 @@ services:
     volumes: !reset []
 
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.31-alpine
     container_name: fastapi_monolith_nginx
     restart: unless-stopped
     ports:
