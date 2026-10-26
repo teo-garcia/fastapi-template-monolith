@@ -10,6 +10,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.config.settings import Settings
+from app.shared.database.engine import engine
 
 
 def configure_telemetry(settings: Settings, app: FastAPI) -> None:
@@ -31,7 +32,7 @@ def configure_telemetry(settings: Settings, app: FastAPI) -> None:
     FastAPIInstrumentor.instrument_app(app)
     HTTPXClientInstrumentor().instrument()
     RedisInstrumentor().instrument()
-    SQLAlchemyInstrumentor().instrument()
+    SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
 
 
 def shutdown_telemetry() -> None:
