@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.12.*"
 
 [[package]]
@@ -265,12 +265,12 @@ requires-dist = [
 dev = [
     { name = "mypy", specifier = ">=1.14" },
     { name = "pre-commit", specifier = ">=4.0" },
-    { name = "pytest", specifier = ">=8.3" },
+    { name = "pytest", specifier = ">=9.0" },
     { name = "pytest-asyncio", specifier = ">=0.25" },
     { name = "pytest-cov", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.8" },
     { name = "teo-mypy-config-shared", specifier = "==0.1.0" },
-    { name = "teo-pytest-config-shared", specifier = "==0.1.0" },
+    { name = "teo-pytest-config-shared", specifier = "==0.2.0" },
     { name = "teo-ruff-config-shared", specifier = "==0.1.0" },
 ]
 
@@ -1067,11 +1067,11 @@ wheels = [
 
 [[package]]
 name = "teo-pytest-config-shared"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a3/46/fdc098c770313af6ec22138a893956da7e1efe5972c51e56d2b7a888fc74/teo_pytest_config_shared-0.1.0.tar.gz", hash = "sha256:e752345fb47f1b6681264273a362e73aa1b367e6308cdc079628033e5245bb21", size = 17022, upload-time = "2026-05-07T02:06:39.689Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/39/f6e032e572768c2d20f39af7fff6207029393df15b6d49562fd62169bc18/teo_pytest_config_shared-0.2.0.tar.gz", hash = "sha256:c71f03f4dc86919977394eed9878d3c60b503aa365032c0418482db3ac27b744", size = 19068, upload-time = "2026-11-21T05:15:12.903Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/ee/7a316510b02a9ed176e2f386ef4d90b221a9fd9eba724227df6aa64ba917/teo_pytest_config_shared-0.1.0-py3-none-any.whl", hash = "sha256:03f30936f8d1b084ef97051f8c6ce7b4c9e7e20f1293c123903a4f8906f2bce4", size = 3664, upload-time = "2026-05-07T02:06:38.361Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/09/ed2edc9bac57617116f4b277e29255b528375ae48eef28617e26af92a974/teo_pytest_config_shared-0.2.0-py3-none-any.whl", hash = "sha256:21585f4b8bff3a0a0f794394f051ee484ddc9922f7fbef2ec01264be85b0ca6e", size = 3646, upload-time = "2026-11-21T05:15:11.972Z" },
 ]
 
 [[package]]

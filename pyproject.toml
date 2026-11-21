@@ -30,7 +30,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3",
+    "pytest>=9.0",
     "pytest-asyncio>=0.25",
     "pytest-cov>=6.0",
     "mypy>=1.14",
@@ -38,7 +38,7 @@ dev = [
     "pre-commit>=4.0",
     "teo-ruff-config-shared==0.1.0",
     "teo-mypy-config-shared==0.1.0",
-    "teo-pytest-config-shared==0.1.0",
+    "teo-pytest-config-shared==0.2.0",
 ]
 
 [build-system]
@@ -79,7 +79,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "--strict-markers"
+strict_markers = true
 markers = ["e2e: end-to-end tests requiring database and redis"]
 
 [tool.coverage.run]
