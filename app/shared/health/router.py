@@ -47,7 +47,7 @@ async def _run_checks(db: AsyncSession, redis: Redis) -> dict[str, str]:
         checks["database"] = CHECK_DOWN
 
     try:
-        await redis.ping()  # type: ignore[misc]
+        await redis.ping()
         checks["redis"] = CHECK_UP
     except Exception:
         await logger.awarning("health_check_failed", service="redis")
