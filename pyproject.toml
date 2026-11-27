@@ -8,11 +8,11 @@ authors = [{ name = "teo-garcia" }]
 dependencies = [
     # <0.137: FastAPI 0.137 nests included routers, which slowapi 0.1.10 cannot see, so rate
     # limiting silently stops. Lift when slowapi supports the route tree (tests/test_rate_limit.py).
-    "fastapi>=0.115,<0.137",
+    "fastapi>=0.165,<0.166",
     "uvicorn[standard]>=0.34",
     "gunicorn>=23.0",
     # <2.1: opentelemetry-instrumentation-sqlalchemy 0.66b2 supports sqlalchemy <2.1 only.
-    "sqlalchemy[asyncio]>=2.0,<2.1",
+    "sqlalchemy[asyncio]>=2.1,<2.2",
     "asyncpg>=0.30",
     "alembic>=1.14",
     "pydantic-settings>=2.7",
