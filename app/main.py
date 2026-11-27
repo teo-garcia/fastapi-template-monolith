@@ -4,8 +4,6 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.config.settings import get_settings
@@ -52,14 +50,16 @@ def create_app() -> FastAPI:
     )
     configure_telemetry(settings, app)
 
-    # Middleware stack (last added = first executed)
+    # Middleware stack (last added = first executed). The rate limiter is added
+    # first so rejected requests still get request IDs, security headers, logs,
+    # and metrics from the outer middleware.
+    app.add_middleware(SlowAPIMiddleware)
     if settings.metrics_enabled:
         app.add_middleware(MetricsMiddleware)
     app.add_middleware(ResponseEnvelopeMiddleware)
     app.add_middleware(LoggingMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RequestIdMiddleware)
-    app.add_middleware(SlowAPIMiddleware)
 
     if settings.cors_enabled:
         app.add_middleware(
@@ -83,7 +83,6 @@ def create_app() -> FastAPI:
         swallow_errors=True,
     )
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
     # Exception handlers
     register_exception_handlers(app)

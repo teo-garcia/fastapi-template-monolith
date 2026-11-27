@@ -4,7 +4,8 @@ from typing import Any
 import structlog
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -67,6 +68,21 @@ async def _integrity_error_handler(request: Request, exc: IntegrityError) -> JSO
     )
 
 
+def _rate_limit_error_handler(request: Request, exc: RateLimitExceeded) -> Response:
+    # Must stay synchronous: SlowAPIMiddleware replaces async handlers with
+    # slowapi's default, which does not return the error envelope.
+    response: Response = JSONResponse(
+        status_code=429,
+        content=_api_error_body(request, 429, "Rate limit exceeded", "RateLimitError"),
+    )
+    limiter = getattr(request.app.state, "limiter", None)
+    view_rate_limit = getattr(request.state, "view_rate_limit", None)
+    if limiter is not None and view_rate_limit is not None:
+        # Same header injection slowapi's default handler performs.
+        response = limiter._inject_headers(response, view_rate_limit)
+    return response
+
+
 async def _unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "unknown")
     await logger.aerror("unhandled_error", exc_info=exc, request_id=request_id)
@@ -86,4 +102,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, _validation_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(IntegrityError, _integrity_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, _unhandled_error_handler)
